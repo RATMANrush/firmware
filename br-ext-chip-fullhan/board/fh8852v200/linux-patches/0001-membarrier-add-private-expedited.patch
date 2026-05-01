@@ -1,5 +1,5 @@
---- /tmp/orig/linux-fullhan-fh8852v200/kernel/membarrier.c	2023-06-03 03:32:34.000000000 +0200
-+++ kernel/membarrier.c	2026-05-01 06:52:05.242438372 +0200
+--- a/kernel/membarrier.c	2023-06-03 03:32:34.000000000 +0200
++++ b/kernel/membarrier.c	2026-05-01 06:52:05.242438372 +0200
 @@ -12,59 +12,51 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -97,8 +97,8 @@
 +                return -EINVAL;
 +        }
  }
---- /tmp/orig/linux-fullhan-fh8852v200/include/uapi/linux/membarrier.h	2023-06-03 03:32:34.000000000 +0200
-+++ include/uapi/linux/membarrier.h	2026-05-01 06:54:44.232062747 +0200
+--- a/include/uapi/linux/membarrier.h	2023-06-03 03:32:34.000000000 +0200
++++ b/include/uapi/linux/membarrier.h	2026-05-01 06:54:44.232062747 +0200
 @@ -47,7 +47,9 @@
   */
  enum membarrier_cmd {
