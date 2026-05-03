@@ -1,0 +1,11 @@
+diff --git a/linkhash.c b/linkhash.c
+index 1234567..abcdefg 100644
+--- a/linkhash.c
++++ b/linkhash.c
+@@ -389,6 +389,8 @@ int lh_table_insert_w_hash(struct lh_table *t, const void *k, const void *v,
+ struct lh_entry *lh_table_lookup_entry_w_hash(struct lh_table *t, const void *k,
+                                               const unsigned long h)
+ {
++	if (!t || !k)
++		return NULL;
+ 	unsigned long n = h % (unsigned long)t->size;
