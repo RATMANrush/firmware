@@ -1,14 +1,11 @@
-################################################################################
-#
-# json-c
-#
-################################################################################
+JSON_C_VERSION = 0.17
+JSON_C_SITE = https://github.com/json-c/json-c/archive
+JSON_C_SOURCE = $(JSON_C_VERSION).tar.gz
+JSON_C_LICENSE = MIT
+JSON_C_LICENSE_FILES = COPYING
+JSON_C_INSTALL_STAGING = YES
 
-# Całkowite zablokowanie nakładania patchy dla tego pakietu
+# TO JEST KLUCZOWE: Wymuszamy brak patchy
 JSON_C_PATCH = 
 
-define JSON_C_REMOVE_CUSTOM_PATCHES
-	rm -f $(@D)/0001-null-check-lh-table-lookup.patch
-endef
-
-JSON_C_POST_EXTRACT_HOOKS += JSON_C_REMOVE_CUSTOM_PATCHES
+$(eval $(cmake-package))

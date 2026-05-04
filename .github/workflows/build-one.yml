@@ -1,3 +1,4 @@
+mario@RATMANuAni:~/openipc_work/kernel_49_patch/firmware$ cat .github/workflows/build-one.yml
 name: build-one
 on:
   workflow_dispatch:
@@ -27,7 +28,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/ccache
-          key: ${{inputs.platform}}-${{env.CACHE_DATE}}-v2
+          key: ${{inputs.platform}}-${{env.CACHE_DATE}}-v3
 
       - name: Build firmware
         run: |
@@ -60,3 +61,4 @@ jobs:
           files: |
             ${{env.NORFW}}
             ${{env.NANDFW}}
+mario@RATMANuAni:~/openipc_work/kernel_49_patch/firmware$
