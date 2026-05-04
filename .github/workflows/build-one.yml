@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: 'Platform to build (e.g. hi3516cv100_lite)'
+        description: 'Platform to build (e.g. fh8856v200_lite)'
         required: true
 
 env:
@@ -11,7 +11,7 @@ env:
 
 jobs:
   buildroot:
-    name: Firmware (${{inputs.platform}})
+    name: Firmware (${{ inputs.platform }})
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/ccache
-          key: ${{ inputs.platform }}-${{ env.CACHE_DATE }}-v1-odnowa
+          key: ${{ inputs.platform }}-${{ env.CACHE_DATE }}-v10-final
 
       - name: Build firmware
         run: |
@@ -38,26 +38,11 @@ jobs:
 
           mkdir -p /tmp/ccache
           ln -s /tmp/ccache ${HOME}/.ccache
-          make BOARD=${{inputs.platform}}
-
-          TIME=$(date -d @${SECONDS} +%M:%S)
-          echo TIME=${TIME} >> ${GITHUB_ENV}
-
-          NORFW=$(find output/images -name openipc*nor*)
-          if [ -e ${NORFW} ]; then
-            echo NORFW=${NORFW} >> ${GITHUB_ENV}
-          fi
-
-          NANDFW=$(find output/images -name openipc*nand*)
-          if [ -e ${NANDFW} ]; then
-            echo NANDFW=${NANDFW} >> ${GITHUB_ENV}
-          fi
+          make BOARD=${{ inputs.platform }}
 
       - name: Upload firmware
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{env.TAG_NAME}}
+          tag_name: ${{ env.TAG_NAME }}
           files: |
-            ${{env.NORFW}}
-            ${{env.NANDFW}}
-mario@RATMANuAni:~/openipc_work/kernel_49_patch/firmware$
+            output/images/openipc*
