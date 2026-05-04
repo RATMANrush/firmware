@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/ccache
-          key: ${{inputs.platform}}-${{env.CACHE_DATE}}
+          key: ${{inputs.platform}}-${{env.CACHE_DATE}}-v2
 
       - name: Build firmware
         run: |
