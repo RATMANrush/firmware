@@ -1,0 +1,112 @@
+--- a/kernel/membarrier.c	2023-06-03 03:32:34.000000000 +0200
++++ b/kernel/membarrier.c	2026-05-01 06:52:05.242438372 +0200
+@@ -12,59 +12,51 @@
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
++ *
++ * Backport: added PRIVATE_EXPEDITED + REGISTER_PRIVATE_EXPEDITED for
++ * FH8852V200 / OpenIPC 4.9.129 (majestic segfault fix)
+  */
+-
+ #include <linux/syscalls.h>
+ #include <linux/membarrier.h>
+ #include <linux/tick.h>
++#include <linux/sched.h>
+ 
+ /*
+- * Bitmask made from a "or" of all commands within enum membarrier_cmd,
+- * except MEMBARRIER_CMD_QUERY.
++ * Bitmask of all supported commands except MEMBARRIER_CMD_QUERY.
+  */
+-#define MEMBARRIER_CMD_BITMASK	(MEMBARRIER_CMD_SHARED)
++#define MEMBARRIER_CMD_BITMASK  (MEMBARRIER_CMD_SHARED                      | \
++                                 MEMBARRIER_CMD_PRIVATE_EXPEDITED            | \
++                                 MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED)
+ 
+-/**
+- * sys_membarrier - issue memory barriers on a set of threads
+- * @cmd:   Takes command values defined in enum membarrier_cmd.
+- * @flags: Currently needs to be 0. For future extensions.
+- *
+- * If this system call is not implemented, -ENOSYS is returned. If the
+- * command specified does not exist, or if the command argument is invalid,
+- * this system call returns -EINVAL. For a given command, with flags argument
+- * set to 0, this system call is guaranteed to always return the same value
+- * until reboot.
+- *
+- * All memory accesses performed in program order from each targeted thread
+- * is guaranteed to be ordered with respect to sys_membarrier(). If we use
+- * the semantic "barrier()" to represent a compiler barrier forcing memory
+- * accesses to be performed in program order across the barrier, and
+- * smp_mb() to represent explicit memory barriers forcing full memory
+- * ordering across the barrier, we have the following ordering table for
+- * each pair of barrier(), sys_membarrier() and smp_mb():
+- *
+- * The pair ordering is detailed as (O: ordered, X: not ordered):
+- *
+- *                        barrier()   smp_mb() sys_membarrier()
+- *        barrier()          X           X            O
+- *        smp_mb()           X           O            O
+- *        sys_membarrier()   O           O            O
+- */
+ SYSCALL_DEFINE2(membarrier, int, cmd, int, flags)
+ {
+-	/* MEMBARRIER_CMD_SHARED is not compatible with nohz_full. */
+-	if (tick_nohz_full_enabled())
+-		return -ENOSYS;
+-	if (unlikely(flags))
+-		return -EINVAL;
+-	switch (cmd) {
+-	case MEMBARRIER_CMD_QUERY:
+-		return MEMBARRIER_CMD_BITMASK;
+-	case MEMBARRIER_CMD_SHARED:
+-		if (num_online_cpus() > 1)
+-			synchronize_sched();
+-		return 0;
+-	default:
+-		return -EINVAL;
+-	}
++        if (tick_nohz_full_enabled())
++                return -ENOSYS;
++        if (unlikely(flags))
++                return -EINVAL;
++        switch (cmd) {
++        case MEMBARRIER_CMD_QUERY:
++                return MEMBARRIER_CMD_BITMASK;
++        case MEMBARRIER_CMD_SHARED:
++                if (num_online_cpus() > 1)
++                        synchronize_sched();
++                return 0;
++        case MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED:
++                /*
++                 * No mm->membarrier_state in 4.9 - accept registration
++                 * as no-op. Actual barrier done at PRIVATE_EXPEDITED time.
++                 */
++                return 0;
++        case MEMBARRIER_CMD_PRIVATE_EXPEDITED:
++                /*
++                 * Fallback: synchronize_sched() is stronger than needed
++                 * (system-wide vs per-process) but correct.
++                 * Acceptable on single-app embedded camera SoC.
++                 */
++                if (num_online_cpus() > 1)
++                        synchronize_sched();
++                return 0;
++        default:
++                return -EINVAL;
++        }
+ }
+--- a/include/uapi/linux/membarrier.h	2023-06-03 03:32:34.000000000 +0200
++++ b/include/uapi/linux/membarrier.h	2026-05-01 06:54:44.232062747 +0200
+@@ -47,7 +47,9 @@
+  */
+ enum membarrier_cmd {
+ 	MEMBARRIER_CMD_QUERY = 0,
+-	MEMBARRIER_CMD_SHARED = (1 << 0),
++	MEMBARRIER_CMD_SHARED                         = (1 << 0),
++	MEMBARRIER_CMD_PRIVATE_EXPEDITED              = (1 << 3),
++	MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED     = (1 << 4),
+ };
+ 
+ #endif /* _UAPI_LINUX_MEMBARRIER_H */
