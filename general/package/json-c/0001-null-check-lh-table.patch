@@ -1,0 +1,9 @@
+--- a/linkhash.c
++++ b/linkhash.c
+@@ -1,6 +1,8 @@
+ struct lh_entry *lh_table_lookup_entry_w_hash(struct lh_table *t, const void *k, unsigned long *h)
+ {
++	if (!t || !k)
++		return NULL;
+ 	unsigned long n;
+ 	struct lh_entry *e;
