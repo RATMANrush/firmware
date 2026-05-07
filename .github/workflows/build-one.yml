@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/ccache
-          key: ${{ inputs.platform }}-${{ env.CACHE_DATE }}-gemini-klamca
+          key: ${{ inputs.platform }}-${{ env.CACHE_DATE }}-nowy
 
       - name: Build firmware
         run: |
