@@ -1,0 +1,13 @@
+#!/bin/sh
+case "$1" in
+    start)
+        mount -t jffs2 /dev/mtdblock4 /overlay
+        mkdir -p /overlay/upper /overlay/work
+        mount -t overlay overlay \
+            -o lowerdir=/etc,upperdir=/overlay/upper,workdir=/overlay/work /etc
+        ;;
+    stop)
+        umount /etc
+        umount /overlay
+        ;;
+esac
